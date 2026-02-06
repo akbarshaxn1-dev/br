@@ -19,7 +19,10 @@ export const Dashboard = () => {
     try {
       console.log('Loading factions...');
       const token = localStorage.getItem('access_token');
-      const response = await fetch(`${window.location.origin}/api/factions`, {
+      const API_URL = 'https://dept-manager-4.preview.emergentagent.com';
+      console.log('Using API URL:', API_URL);
+      
+      const response = await fetch(`${API_URL}/api/factions`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -28,7 +31,7 @@ export const Dashboard = () => {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to load factions');
+        throw new Error(`Failed to load factions: ${response.status}`);
       }
       
       const data = await response.json();
