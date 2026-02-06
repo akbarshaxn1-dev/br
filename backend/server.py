@@ -9,7 +9,7 @@ import socketio
 from database import connect_db, close_db
 
 # Import routes
-from routes import auth, factions, departments, weeks, topics, notifications, audit
+from routes import auth, factions, departments, weeks, topics, notifications, audit, admin
 
 # Import WebSocket server
 from websocket_server import sio
