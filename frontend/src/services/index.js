@@ -1,8 +1,36 @@
 import api from './api';
 
+const handleResponse = async (response) => {
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Request failed' }));
+    throw new Error(error.detail || 'Request failed');
+  }
+  return response.json();
+};
+
 export const factionsService = {
-  getAll: () => api.get('/factions'),
-  getByCode: (code) => api.get(`/factions/${code}`),
+  getAll: async () => {
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(`${window.location.origin}/api/factions`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = await handleResponse(response);
+    return { data };
+  },
+  getByCode: async (code) => {
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(`${window.location.origin}/api/factions/${code}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = await handleResponse(response);
+    return { data };
+  },
   initialize: () => api.post('/factions/initialize')
 };
 
