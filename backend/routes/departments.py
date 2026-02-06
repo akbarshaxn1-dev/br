@@ -12,6 +12,37 @@ import uuid
 
 router = APIRouter(prefix="/departments", tags=["departments"])
 
+@router.get("/{department_id}", response_model=DepartmentResponse)
+async def get_department(department_id: str, current_user: dict = Depends(get_current_user)):
+    """Get department by ID"""
+    db = get_db()
+    
+    department = await db.departments.find_one({"id": department_id}, {"_id": 0})
+    if not department:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Department not found"
+        )
+    
+    # Get faction info
+    faction = await db.factions.find_one({"id": department['faction_id']}, {"_id": 0})
+    
+    # Check permission
+    if faction and not Permissions.can_view_faction(current_user['role'], current_user.get('faction'), faction['code']):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to view this department"
+        )
+    
+    # Add faction_code for frontend convenience
+    if faction:
+        department['faction_code'] = faction['code']
+    
+    if isinstance(department.get('created_at'), str):
+        department['created_at'] = datetime.fromisoformat(department['created_at'])
+    
+    return department
+
 @router.get("/faction/{faction_code}", response_model=List[DepartmentResponse])
 async def get_faction_departments(faction_code: str, current_user: dict = Depends(get_current_user)):
     """Get all departments for a faction"""
