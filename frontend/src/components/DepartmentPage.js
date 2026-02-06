@@ -1,69 +1,118 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useWebSocket } from '../contexts/WebSocketContext';
-import { xhrApi } from '../utils/xhr-api';
+import { api } from '../utils/api';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { ArrowLeft, Save, Plus, Trash2, Download } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Download, Loader2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
-
-// Mock темы (в реальности будут загружаться из API)
-const mockLectureTopics = ['УК РФ', 'КоАП', 'ФЗ', 'УПК', 'Устав'];
-const mockTrainingTopics = ['Закрепление', 'Доверс', 'Писпен', 'Обыск'];
 
 export const DepartmentPage = () => {
   const { departmentId } = useParams();
   const { user } = useAuth();
-  const { joinDepartment, leaveDepartment } = useWebSocket();
-  const [department] = useState({ name: 'Отдел контрразведки', faction: 'ФСБ' });
-  const [currentWeek] = useState({
-    week_start: '2025-02-02',
-    week_end: '2025-02-08'
-  });
-  const [tableData, setTableData] = useState({
-    rows: [
-      {
-        id: 1,
-        nickname: 'Vadim_Smirnov',
-        lectures: { 'УК РФ': 'present', 'КоАП': 'present', 'ФЗ': 'absent', 'УПК': 'present', 'Устав': 'present' },
-        trainings: { 'Закрепление': 'present', 'Доверс': 'present', 'Писпен': 'absent', 'Обыск': 'present' },
-        attestation: 'passed',
-        days_count: 15
-      },
-      {
-        id: 2,
-        nickname: 'Ivan_Petrov',
-        lectures: { 'УК РФ': 'present', 'КоАП': 'absent', 'ФЗ': 'present', 'УПК': 'absent', 'Устав': 'present' },
-        trainings: { 'Закрепление': 'present', 'Доверс': 'present', 'Писпен': 'present', 'Обыск': 'absent' },
-        attestation: 'not_passed',
-        days_count: 12
-      }
-    ]
-  });
-  const [loading] = useState(false);
+  const [department, setDepartment] = useState(null);
+  const [faction, setFaction] = useState(null);
+  const [currentWeek, setCurrentWeek] = useState(null);
+  const [lectureTopics, setLectureTopics] = useState([]);
+  const [trainingTopics, setTrainingTopics] = useState([]);
+  const [tableData, setTableData] = useState({ rows: [] });
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Load department data
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // Get department info
+      const deptResponse = await api.get(`/api/departments/${departmentId}`);
+      setDepartment(deptResponse);
+      
+      // Get faction info
+      const factionResponse = await api.get(`/api/factions/${deptResponse.faction_code || 'fsb'}`);
+      setFaction(factionResponse);
+      
+      // Get topics for the faction
+      const [lecturesResponse, trainingsResponse] = await Promise.all([
+        api.get(`/api/topics/lectures/faction/${factionResponse.code}`),
+        api.get(`/api/topics/trainings/faction/${factionResponse.code}`)
+      ]);
+      setLectureTopics(lecturesResponse);
+      setTrainingTopics(trainingsResponse);
+      
+      // Get current week
+      const weekResponse = await api.get(`/api/weeks/department/${departmentId}/current`);
+      setCurrentWeek(weekResponse);
+      
+      // Get table data for the week
+      const tableResponse = await api.get(`/api/weeks/${weekResponse.id}/table-data`);
+      setTableData(tableResponse);
+      
+    } catch (error) {
+      console.error('Error loading data:', error);
+      
+      // Fallback to mock data if API fails
+      setDepartment({ name: 'Отдел контрразведки', faction_code: 'fsb' });
+      setFaction({ code: 'fsb', name: 'ФСБ' });
+      setLectureTopics([
+        { id: '1', topic: 'УК РФ' },
+        { id: '2', topic: 'КоАП' },
+        { id: '3', topic: 'ФЗ' },
+        { id: '4', topic: 'УПК' },
+        { id: '5', topic: 'Устав' }
+      ]);
+      setTrainingTopics([
+        { id: '1', topic: 'Закрепление' },
+        { id: '2', topic: 'Доверс' },
+        { id: '3', topic: 'Писпен' },
+        { id: '4', topic: 'Обыск' }
+      ]);
+      setCurrentWeek({
+        id: 'mock-week',
+        week_start: new Date().toISOString(),
+        week_end: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      });
+      setTableData({
+        rows: [
+          {
+            employee_name: 'Vadim_Smirnov',
+            cells: {
+              'УК РФ': 'present', 'КоАП': 'present', 'ФЗ': 'absent', 'УПК': 'present', 'Устав': 'present',
+              'Закрепление': 'present', 'Доверс': 'present', 'Писпен': 'absent', 'Обыск': 'present',
+              'attestation': 'passed', 'days_count': 15
+            }
+          }
+        ]
+      });
+      toast.error('Не удалось загрузить данные. Используются демо-данные.');
+    } finally {
+      setLoading(false);
+    }
+  }, [departmentId]);
 
   useEffect(() => {
-    if (departmentId) {
-      joinDepartment(departmentId);
-    }
-    return () => {
-      if (departmentId) {
-        leaveDepartment(departmentId);
-      }
-    };
-  }, [departmentId, joinDepartment, leaveDepartment]);
+    loadData();
+  }, [loadData]);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Mock save
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Prepare data for API
+      const dataToSave = {
+        rows: tableData.rows.map(row => ({
+          employee_name: row.employee_name,
+          cells: row.cells
+        }))
+      };
+      
+      await api.put(`/api/weeks/${currentWeek.id}/table-data`, dataToSave);
       toast.success('Таблица сохранена');
+      setHasChanges(false);
     } catch (error) {
+      console.error('Error saving:', error);
       toast.error('Ошибка сохранения');
     } finally {
       setSaving(false);
@@ -72,40 +121,46 @@ export const DepartmentPage = () => {
 
   const addRow = () => {
     const newRow = {
-      id: Date.now(),
-      nickname: '',
-      lectures: Object.fromEntries(mockLectureTopics.map(t => [t, 'absent'])),
-      trainings: Object.fromEntries(mockTrainingTopics.map(t => [t, 'absent'])),
-      attestation: 'not_passed',
-      days_count: 0
+      employee_name: '',
+      cells: {}
     };
+    
+    // Initialize cells with default values
+    lectureTopics.forEach(t => { newRow.cells[t.topic] = 'absent'; });
+    trainingTopics.forEach(t => { newRow.cells[t.topic] = 'absent'; });
+    newRow.cells['attestation'] = 'not_passed';
+    newRow.cells['days_count'] = 0;
+    
     setTableData(prev => ({
       ...prev,
       rows: [...prev.rows, newRow]
     }));
+    setHasChanges(true);
   };
 
-  const removeRow = (rowId) => {
+  const removeRow = (index) => {
     setTableData(prev => ({
       ...prev,
-      rows: prev.rows.filter(r => r.id !== rowId)
+      rows: prev.rows.filter((_, i) => i !== index)
     }));
+    setHasChanges(true);
     toast.success('Сотрудник удален');
   };
 
-  const updateCell = (rowId, field, subfield, value) => {
+  const updateCell = (rowIndex, field, value) => {
     setTableData(prev => ({
       ...prev,
-      rows: prev.rows.map(row => {
-        if (row.id === rowId) {
-          if (subfield) {
-            return { ...row, [field]: { ...row[field], [subfield]: value } };
+      rows: prev.rows.map((row, i) => {
+        if (i === rowIndex) {
+          if (field === 'employee_name') {
+            return { ...row, employee_name: value };
           }
-          return { ...row, [field]: value };
+          return { ...row, cells: { ...row.cells, [field]: value } };
         }
         return row;
       })
     }));
+    setHasChanges(true);
   };
 
   const getStatusColor = (status) => {
@@ -114,22 +169,10 @@ export const DepartmentPage = () => {
     return 'bg-gray-500/20 text-gray-700 dark:text-gray-400';
   };
 
-  const getStatusText = (status) => {
-    if (status === 'present') return 'Был';
-    if (status === 'absent') return 'Не был';
-    return '-';
-  };
-
   const getAttestationColor = (status) => {
     if (status === 'passed') return 'bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/30';
     if (status === 'excellent') return 'bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-500/30';
     return 'bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/30';
-  };
-
-  const getAttestationText = (status) => {
-    if (status === 'passed') return 'Сдана';
-    if (status === 'excellent') return 'Отлично';
-    return 'Не сдана';
   };
 
   const formatWeekPeriod = () => {
@@ -139,10 +182,40 @@ export const DepartmentPage = () => {
     return `${start.getDate().toString().padStart(2, '0')}.${(start.getMonth() + 1).toString().padStart(2, '0')} - ${end.getDate().toString().padStart(2, '0')}.${(end.getMonth() + 1).toString().padStart(2, '0')}`;
   };
 
+  const exportToExcel = () => {
+    // Create CSV content
+    let csv = 'Ник;';
+    lectureTopics.forEach(t => { csv += `${t.topic};`; });
+    trainingTopics.forEach(t => { csv += `${t.topic};`; });
+    csv += 'Аттестация;Дней на посту\n';
+    
+    tableData.rows.forEach(row => {
+      csv += `${row.employee_name};`;
+      lectureTopics.forEach(t => { 
+        csv += `${row.cells[t.topic] === 'present' ? 'Был' : 'Не был'};`; 
+      });
+      trainingTopics.forEach(t => { 
+        csv += `${row.cells[t.topic] === 'present' ? 'Был' : 'Не был'};`; 
+      });
+      csv += `${row.cells.attestation === 'passed' ? 'Сдана' : row.cells.attestation === 'excellent' ? 'Отлично' : 'Не сдана'};`;
+      csv += `${row.cells.days_count || 0}\n`;
+    });
+    
+    // Download
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${department?.name || 'table'}_${formatWeekPeriod().replace(' - ', '_')}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success('Файл загружен');
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="spinner"></div>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -151,29 +224,42 @@ export const DepartmentPage = () => {
     <div className="container py-8 space-y-6" data-testid="department-page">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Link to="/factions">
-            <Button variant="outline" size="icon">
+          <Link to={faction ? `/faction/${faction.code}` : '/factions'}>
+            <Button variant="outline" size="icon" data-testid="back-button">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold">{department.name}</h1>
+            <h1 className="text-3xl font-bold">{department?.name}</h1>
             <p className="text-muted-foreground">
-              {department.faction} | Период: {formatWeekPeriod()}
+              {faction?.name} | Период: {formatWeekPeriod()}
             </p>
           </div>
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={addRow} variant="outline">
+          <Button onClick={loadData} variant="outline" data-testid="refresh-button">
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Обновить
+          </Button>
+          <Button onClick={addRow} variant="outline" data-testid="add-employee-button">
             <Plus className="mr-2 h-4 w-4" />
             Добавить сотрудника
           </Button>
-          <Button onClick={handleSave} disabled={saving} data-testid="save-table-button">
-            <Save className="mr-2 h-4 w-4" />
-            {saving ? 'Сохранение...' : 'Сохранить'}
+          <Button 
+            onClick={handleSave} 
+            disabled={saving || !hasChanges} 
+            data-testid="save-table-button"
+            className={hasChanges ? 'bg-green-600 hover:bg-green-700' : ''}
+          >
+            {saving ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
+            {saving ? 'Сохранение...' : hasChanges ? 'Сохранить*' : 'Сохранить'}
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={exportToExcel} data-testid="export-button">
             <Download className="mr-2 h-4 w-4" />
             Excel
           </Button>
@@ -183,7 +269,7 @@ export const DepartmentPage = () => {
       <Card>
         <CardHeader className="bg-yellow-500/10 border-b">
           <CardTitle className="text-yellow-600 dark:text-yellow-500 text-center text-xl">
-            {department.name.toUpperCase()}
+            {department?.name?.toUpperCase()}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -194,10 +280,10 @@ export const DepartmentPage = () => {
                   <th className="px-3 py-3 text-left font-bold border-r min-w-[150px] sticky left-0 bg-muted/50 z-10">
                     Nick Name
                   </th>
-                  <th colSpan={mockLectureTopics.length} className="px-3 py-2 text-center font-bold border-r bg-blue-500/10">
+                  <th colSpan={lectureTopics.length} className="px-3 py-2 text-center font-bold border-r bg-blue-500/10">
                     Лекции
                   </th>
-                  <th colSpan={mockTrainingTopics.length} className="px-3 py-2 text-center font-bold border-r bg-purple-500/10">
+                  <th colSpan={trainingTopics.length} className="px-3 py-2 text-center font-bold border-r bg-purple-500/10">
                     Тренировки
                   </th>
                   <th className="px-3 py-2 text-center font-bold border-r bg-amber-500/10">
@@ -212,14 +298,14 @@ export const DepartmentPage = () => {
                 </tr>
                 <tr className="bg-muted/30 border-b">
                   <th className="px-3 py-2 border-r sticky left-0 bg-muted/30 z-10"></th>
-                  {mockLectureTopics.map((topic, idx) => (
-                    <th key={topic} className="px-2 py-2 text-xs font-semibold border-r min-w-[100px]">
-                      {topic}
+                  {lectureTopics.map((topic) => (
+                    <th key={topic.id} className="px-2 py-2 text-xs font-semibold border-r min-w-[100px]">
+                      {topic.topic}
                     </th>
                   ))}
-                  {mockTrainingTopics.map((topic, idx) => (
-                    <th key={topic} className="px-2 py-2 text-xs font-semibold border-r min-w-[110px]">
-                      {topic}
+                  {trainingTopics.map((topic) => (
+                    <th key={topic.id} className="px-2 py-2 text-xs font-semibold border-r min-w-[110px]">
+                      {topic.topic}
                     </th>
                   ))}
                   <th className="px-2 py-2 border-r"></th>
@@ -228,103 +314,123 @@ export const DepartmentPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {tableData.rows.map((row, rowIdx) => (
-                  <tr key={row.id} className="border-b hover:bg-muted/20 transition-colors">
-                    <td className="px-3 py-2 border-r sticky left-0 bg-background z-10">
-                      <Input
-                        value={row.nickname}
-                        onChange={(e) => updateCell(row.id, 'nickname', null, e.target.value)}
-                        placeholder="Введите ник"
-                        className="min-w-[140px] h-8 text-sm border-none bg-transparent"
-                      />
-                    </td>
-                    
-                    {mockLectureTopics.map((topic) => (
-                      <td key={topic} className="px-2 py-2 border-r">
-                        <Select
-                          value={row.lectures[topic]}
-                          onValueChange={(value) => updateCell(row.id, 'lectures', topic, value)}
-                        >
-                          <SelectTrigger className={`h-8 text-xs font-medium border ${getStatusColor(row.lectures[topic])}`}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="present" className="text-xs">
-                              <span className="text-green-600 font-medium">✓ Был</span>
-                            </SelectItem>
-                            <SelectItem value="absent" className="text-xs">
-                              <span className="text-red-600 font-medium">✗ Не был</span>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </td>
-                    ))}
-
-                    {mockTrainingTopics.map((topic) => (
-                      <td key={topic} className="px-2 py-2 border-r">
-                        <Select
-                          value={row.trainings[topic]}
-                          onValueChange={(value) => updateCell(row.id, 'trainings', topic, value)}
-                        >
-                          <SelectTrigger className={`h-8 text-xs font-medium border ${getStatusColor(row.trainings[topic])}`}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="present" className="text-xs">
-                              <span className="text-green-600 font-medium">✓ Был</span>
-                            </SelectItem>
-                            <SelectItem value="absent" className="text-xs">
-                              <span className="text-red-600 font-medium">✗ Не был</span>
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </td>
-                    ))}
-
-                    <td className="px-2 py-2 border-r">
-                      <Select
-                        value={row.attestation}
-                        onValueChange={(value) => updateCell(row.id, 'attestation', null, value)}
-                      >
-                        <SelectTrigger className={`h-8 text-xs font-medium border ${getAttestationColor(row.attestation)}`}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="not_passed" className="text-xs">
-                            <span className="text-red-600 font-medium">Не сдана</span>
-                          </SelectItem>
-                          <SelectItem value="passed" className="text-xs">
-                            <span className="text-green-600 font-medium">Сдана</span>
-                          </SelectItem>
-                          <SelectItem value="excellent" className="text-xs">
-                            <span className="text-blue-600 font-medium">Отлично</span>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </td>
-
-                    <td className="px-3 py-2 text-center font-semibold">
-                      <Input
-                        type="number"
-                        value={row.days_count}
-                        onChange={(e) => updateCell(row.id, 'days_count', null, parseInt(e.target.value) || 0)}
-                        className="w-16 h-8 text-center text-sm mx-auto"
-                        min="0"
-                      />
-                    </td>
-
-                    <td className="px-2 py-2 text-center">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeRow(row.id)}
-                        className="h-8 w-8"
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                {tableData.rows.length === 0 ? (
+                  <tr>
+                    <td colSpan={lectureTopics.length + trainingTopics.length + 4} className="text-center py-8 text-muted-foreground">
+                      Нет сотрудников. Нажмите "Добавить сотрудника" для добавления.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  tableData.rows.map((row, rowIdx) => (
+                    <tr key={rowIdx} className="border-b hover:bg-muted/20 transition-colors">
+                      <td className="px-3 py-2 border-r sticky left-0 bg-background z-10">
+                        <Input
+                          value={row.employee_name}
+                          onChange={(e) => updateCell(rowIdx, 'employee_name', e.target.value)}
+                          placeholder="Введите ник"
+                          className="min-w-[140px] h-8 text-sm border-none bg-transparent"
+                          data-testid={`employee-name-${rowIdx}`}
+                        />
+                      </td>
+                      
+                      {lectureTopics.map((topic) => (
+                        <td key={topic.id} className="px-2 py-2 border-r">
+                          <Select
+                            value={row.cells[topic.topic] || 'absent'}
+                            onValueChange={(value) => updateCell(rowIdx, topic.topic, value)}
+                          >
+                            <SelectTrigger 
+                              className={`h-8 text-xs font-medium border ${getStatusColor(row.cells[topic.topic])}`}
+                              data-testid={`lecture-${topic.topic}-${rowIdx}`}
+                            >
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="present" className="text-xs">
+                                <span className="text-green-600 font-medium">✓ Был</span>
+                              </SelectItem>
+                              <SelectItem value="absent" className="text-xs">
+                                <span className="text-red-600 font-medium">✗ Не был</span>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </td>
+                      ))}
+
+                      {trainingTopics.map((topic) => (
+                        <td key={topic.id} className="px-2 py-2 border-r">
+                          <Select
+                            value={row.cells[topic.topic] || 'absent'}
+                            onValueChange={(value) => updateCell(rowIdx, topic.topic, value)}
+                          >
+                            <SelectTrigger 
+                              className={`h-8 text-xs font-medium border ${getStatusColor(row.cells[topic.topic])}`}
+                              data-testid={`training-${topic.topic}-${rowIdx}`}
+                            >
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="present" className="text-xs">
+                                <span className="text-green-600 font-medium">✓ Был</span>
+                              </SelectItem>
+                              <SelectItem value="absent" className="text-xs">
+                                <span className="text-red-600 font-medium">✗ Не был</span>
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </td>
+                      ))}
+
+                      <td className="px-2 py-2 border-r">
+                        <Select
+                          value={row.cells.attestation || 'not_passed'}
+                          onValueChange={(value) => updateCell(rowIdx, 'attestation', value)}
+                        >
+                          <SelectTrigger 
+                            className={`h-8 text-xs font-medium border ${getAttestationColor(row.cells.attestation)}`}
+                            data-testid={`attestation-${rowIdx}`}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="not_passed" className="text-xs">
+                              <span className="text-red-600 font-medium">Не сдана</span>
+                            </SelectItem>
+                            <SelectItem value="passed" className="text-xs">
+                              <span className="text-green-600 font-medium">Сдана</span>
+                            </SelectItem>
+                            <SelectItem value="excellent" className="text-xs">
+                              <span className="text-blue-600 font-medium">Отлично</span>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </td>
+
+                      <td className="px-3 py-2 text-center font-semibold">
+                        <Input
+                          type="number"
+                          value={row.cells.days_count || 0}
+                          onChange={(e) => updateCell(rowIdx, 'days_count', parseInt(e.target.value) || 0)}
+                          className="w-16 h-8 text-center text-sm mx-auto"
+                          min="0"
+                          data-testid={`days-count-${rowIdx}`}
+                        />
+                      </td>
+
+                      <td className="px-2 py-2 text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeRow(rowIdx)}
+                          className="h-8 w-8"
+                          data-testid={`remove-row-${rowIdx}`}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -332,8 +438,8 @@ export const DepartmentPage = () => {
       </Card>
 
       <div className="flex justify-between items-center text-sm text-muted-foreground">
-        <p>Последнее сохранение: только что</p>
-        <p>Real-time обновления: {saving ? 'Сохранение...' : 'Активно'}</p>
+        <p>Последнее сохранение: {saving ? 'Сохранение...' : hasChanges ? 'Есть несохраненные изменения' : 'только что'}</p>
+        <p>Real-time обновления: Активно</p>
       </div>
     </div>
   );
