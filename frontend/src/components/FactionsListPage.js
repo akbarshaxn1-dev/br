@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { api } from '../utils/api';
+import { xhrApi } from '../utils/xhr-api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
