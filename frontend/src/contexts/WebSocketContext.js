@@ -12,7 +12,12 @@ export const useWebSocket = () => {
   return context;
 };
 
-const SOCKET_URL = process.env.REACT_APP_BACKEND_URL;
+let SOCKET_URL = process.env.REACT_APP_BACKEND_URL;
+
+// Ensure SOCKET_URL uses HTTPS if window is HTTPS
+if (typeof window !== 'undefined' && window.location.protocol === 'https:' && SOCKET_URL && SOCKET_URL.startsWith('http:')) {
+  SOCKET_URL = SOCKET_URL.replace('http:', 'https:');
+}
 
 export const WebSocketProvider = ({ children }) => {
   const { user, isAuthenticated } = useAuth();
