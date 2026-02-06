@@ -16,7 +16,20 @@ export const FactionsListPage = () => {
 
   const loadFactions = async () => {
     try {
-      const data = await apiFetch('/api/factions');
+      const token = localStorage.getItem('access_token');
+      const response = await fetch('https://dept-manager-4.preview.emergentagent.com/api/factions', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to load');
+      }
+      
+      const data = await response.json();
       setFactions(data);
     } catch (error) {
       console.error('Error:', error);
