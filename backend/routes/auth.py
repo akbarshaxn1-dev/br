@@ -232,7 +232,7 @@ async def refresh_access_token(refresh_token: str):
         "token_type": "bearer"
     }
 
-@router.post("/logout", data-testid="logout-endpoint")
+@router.post("/logout")
 async def logout(refresh_token: str, current_user: dict = Depends(get_current_user)):
     """Logout user by invalidating refresh token"""
     db = get_db()
