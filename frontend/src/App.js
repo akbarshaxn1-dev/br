@@ -6,6 +6,8 @@ import { WebSocketProvider } from './contexts/WebSocketContext';
 import { Toaster } from './components/ui/sonner';
 import { LoginPage } from './components/LoginPage';
 import { Dashboard } from './components/Dashboard';
+import { FactionPage } from './components/FactionPage';
+import { DepartmentPage } from './components/DepartmentPage';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import './App.css';
