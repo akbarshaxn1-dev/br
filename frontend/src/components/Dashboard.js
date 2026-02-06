@@ -17,8 +17,21 @@ export const Dashboard = () => {
 
   const loadFactions = async () => {
     try {
-      console.log('Loading factions via apiFetch...');
-      const data = await apiFetch('/api/factions');
+      console.log('Loading factions via direct fetch...');
+      const token = localStorage.getItem('access_token');
+      const response = await fetch('https://dept-manager-4.preview.emergentagent.com/api/factions', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed: ${response.status}`);
+      }
+      
+      const data = await response.json();
       console.log('Factions loaded:', data.length);
       setFactions(data);
     } catch (error) {
