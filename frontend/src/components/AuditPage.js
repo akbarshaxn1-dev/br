@@ -138,12 +138,12 @@ export const AuditPage = () => {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-3">
             <div>
-              <Select value={filter.resource_type} onValueChange={(v) => setFilter(f => ({...f, resource_type: v}))}>
+              <Select value={filter.resource_type || "all"} onValueChange={(v) => setFilter(f => ({...f, resource_type: v === "all" ? "" : v}))}>
                 <SelectTrigger data-testid="filter-resource-type">
                   <SelectValue placeholder="Тип ресурса" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Все типы</SelectItem>
+                  <SelectItem value="all">Все типы</SelectItem>
                   <SelectItem value="auth">Авторизация</SelectItem>
                   <SelectItem value="user">Пользователь</SelectItem>
                   <SelectItem value="department">Отдел</SelectItem>
