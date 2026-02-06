@@ -8,7 +8,7 @@ export const getApiUrl = () => {
   if (typeof window !== 'undefined') {
     return window.location.origin;
   }
-  return 'https://dept-manager-4.preview.emergentagent.com';
+  return 'https://mgmtsystem.preview.emergentagent.com';
 };
 
 export const API_BASE_URL = getApiUrl();
