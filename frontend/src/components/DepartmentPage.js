@@ -42,9 +42,9 @@ export const DepartmentPage = () => {
 
   const loadData = async () => {
     try {
-      const weekRes = await weeksService.getCurrent(departmentId);
-      setCurrentWeek(weekRes.data);
-      await loadTableData(weekRes.data.id);
+      const weekData = await api.get(`/api/weeks/department/${departmentId}/current`);
+      setCurrentWeek(weekData);
+      await loadTableData(weekData.id);
     } catch (error) {
       console.error('Error loading department data:', error);
       toast.error('Ошибка загрузки данных');
@@ -56,8 +56,8 @@ export const DepartmentPage = () => {
   const loadTableData = async (weekId = currentWeek?.id) => {
     if (!weekId) return;
     try {
-      const res = await weeksService.getTableData(weekId);
-      setTableData(res.data);
+      const data = await api.get(`/api/weeks/${weekId}/table-data`);
+      setTableData(data);
     } catch (error) {
       console.error('Error loading table data:', error);
     }
@@ -68,7 +68,7 @@ export const DepartmentPage = () => {
     
     setSaving(true);
     try {
-      await weeksService.updateTableData(currentWeek.id, tableData);
+      await api.put(`/api/weeks/${currentWeek.id}/table-data`, tableData);
       toast.success('Таблица сохранена');
     } catch (error) {
       console.error('Error saving table:', error);
