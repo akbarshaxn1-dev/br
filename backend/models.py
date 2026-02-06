@@ -123,6 +123,7 @@ class DepartmentResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str
     faction_id: str
+    faction_code: Optional[str] = None
     name: str
     head_user_id: Optional[str]
     deputy_user_ids: List[str]
