@@ -1,11 +1,16 @@
 import axios from 'axios';
 import { API_BASE_URL } from '../config';
 
-console.log('API Base URL:', API_BASE_URL);
+console.log('[API] Initializing API client with baseURL:', API_BASE_URL);
 
 const api = axios.create({
-  baseURL: `${API_BASE_URL}/api`
+  baseURL: `${API_BASE_URL}/api`,
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
+
+console.log('[API] API client baseURL configured:', api.defaults.baseURL);
 
 // Add auth token to requests
 api.interceptors.request.use(
@@ -14,15 +19,24 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    console.log('[API] Request:', config.method?.toUpperCase(), config.url);
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error('[API] Request error:', error);
+    return Promise.reject(error);
+  }
 );
 
 // Handle token refresh on 401
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('[API] Response:', response.config.method?.toUpperCase(), response.config.url, response.status);
+    return response;
+  },
   async (error) => {
+    console.error('[API] Response error:', error.config?.method?.toUpperCase(), error.config?.url, error.response?.status);
+    
     const originalRequest = error.config;
     
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -35,7 +49,7 @@ api.interceptors.response.use(
         }
         
         const response = await axios.post(
-          `${API_URL}/api/auth/refresh`,
+          `${API_BASE_URL}/api/auth/refresh`,
           null,
           { params: { refresh_token: refreshToken } }
         );
