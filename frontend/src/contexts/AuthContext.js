@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
 
   const verifyToken = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/auth/me`, {
+      const response = await axios.get(`${API_BASE_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
       setUser(response.data);
@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
 
   const refreshAccessToken = async () => {
     try {
-      const response = await axios.post(`${API_URL}/api/auth/refresh`, null, {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/refresh`, null, {
         params: { refresh_token: refreshToken }
       });
       const newAccessToken = response.data.access_token;
@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password, otpCode = null) => {
-    const response = await axios.post(`${API_URL}/api/auth/login`, {
+    const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
       email,
       password,
       otp_code: otpCode
