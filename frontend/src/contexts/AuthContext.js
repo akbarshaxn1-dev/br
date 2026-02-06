@@ -1,12 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 
-let API_URL = process.env.REACT_APP_BACKEND_URL;
-
-// Ensure API_URL uses HTTPS if window is HTTPS
-if (typeof window !== 'undefined' && window.location.protocol === 'https:' && API_URL && API_URL.startsWith('http:')) {
-  API_URL = API_URL.replace('http:', 'https:');
-}
+const API_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
 
 const AuthContext = createContext();
 
