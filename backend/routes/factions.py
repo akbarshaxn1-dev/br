@@ -21,7 +21,7 @@ FACTIONS_DATA = [
     {"code": "fsin", "name": "ФСИН", "description": "Федеральная служба исполнения наказаний"},
 ]
 
-@router.get("/", response_model=List[FactionResponse], data-testid="get-factions-list")
+@router.get("/", response_model=List[FactionResponse])
 async def get_factions(current_user: dict = Depends(get_current_user)):
     """Get list of factions (filtered by user permissions)"""
     db = get_db()
