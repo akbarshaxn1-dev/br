@@ -46,7 +46,7 @@ export const FactionPage = () => {
 
     setCreating(true);
     try {
-      await departmentsService.create(factionCode, { name: newDeptName });
+      await api.post(`/api/departments/faction/${factionCode}`, { name: newDeptName });
       toast.success('Отдел успешно создан');
       setNewDeptName('');
       setCreateDialogOpen(false);
