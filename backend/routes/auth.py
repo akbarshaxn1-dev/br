@@ -241,7 +241,7 @@ async def logout(refresh_token: str, current_user: dict = Depends(get_current_us
     
     return {"message": "Logged out successfully"}
 
-@router.post("/setup-2fa", response_model=TwoFASetupResponse, data-testid="setup-2fa-endpoint")
+@router.post("/setup-2fa", response_model=TwoFASetupResponse)
 async def setup_2fa(current_user: dict = Depends(get_current_user)):
     """Setup 2FA for user"""
     db = get_db()
