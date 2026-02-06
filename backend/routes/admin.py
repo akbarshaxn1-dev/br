@@ -7,7 +7,8 @@ from database import get_db
 from models import (
     UserResponse, AdminUserCreate, UserUpdate, RoleEnum, FactionEnum
 )
-from utils.security import get_current_user, get_password_hash
+from routes.auth import get_current_user
+from utils.security import get_password_hash
 from utils.permissions import Permissions
 from utils.audit import log_action
 
