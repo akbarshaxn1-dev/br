@@ -8,9 +8,12 @@ from models import (
     UserResponse, AdminUserCreate, UserUpdate, RoleEnum, FactionEnum
 )
 from routes.auth import get_current_user
-from utils.security import get_password_hash
+from utils.security import hash_password
 from utils.permissions import Permissions
 from utils.audit import log_action
+
+# Alias for consistency
+get_password_hash = hash_password
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
