@@ -43,7 +43,7 @@ async def get_factions(current_user: dict = Depends(get_current_user)):
     
     return factions
 
-@router.get("/{faction_code}", response_model=FactionResponse, data-testid="get-faction-detail")
+@router.get("/{faction_code}", response_model=FactionResponse)
 async def get_faction(faction_code: str, current_user: dict = Depends(get_current_user)):
     """Get faction details"""
     db = get_db()
