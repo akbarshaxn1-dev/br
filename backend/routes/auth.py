@@ -103,7 +103,7 @@ async def register(user_data: UserCreate, request: Request):
     
     return user_response
 
-@router.post("/login", response_model=TokenResponse, data-testid="login-endpoint")
+@router.post("/login", response_model=TokenResponse)
 async def login(credentials: UserLogin, request: Request):
     """Login user and return tokens"""
     db = get_db()
