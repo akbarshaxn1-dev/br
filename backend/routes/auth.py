@@ -291,7 +291,7 @@ async def setup_2fa(current_user: dict = Depends(get_current_user)):
         "backup_codes": backup_codes
     }
 
-@router.post("/verify-2fa", data-testid="verify-2fa-endpoint")
+@router.post("/verify-2fa")
 async def verify_2fa(otp_code: str, current_user: dict = Depends(get_current_user)):
     """Verify and enable 2FA"""
     db = get_db()
