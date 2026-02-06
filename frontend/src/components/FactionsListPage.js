@@ -17,7 +17,8 @@ export const FactionsListPage = () => {
   const loadFactions = async () => {
     try {
       const token = localStorage.getItem('access_token');
-      const response = await fetch('https://dept-manager-4.preview.emergentagent.com/api/factions', {
+      // Use relative URL
+      const response = await fetch('/api/factions', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
