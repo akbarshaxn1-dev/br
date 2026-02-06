@@ -67,7 +67,7 @@ async def get_faction(faction_code: str, current_user: dict = Depends(get_curren
     
     return faction
 
-@router.post("/initialize", data-testid="initialize-factions")
+@router.post("/initialize")
 async def initialize_factions(current_user: dict = Depends(get_current_user)):
     """Initialize all factions (Developer only)"""
     db = get_db()
