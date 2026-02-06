@@ -18,9 +18,22 @@ export const Dashboard = () => {
   const loadFactions = async () => {
     try {
       console.log('Loading factions...');
-      const response = await factionsService.getAll();
-      console.log('Factions loaded:', response.data);
-      setFactions(response.data);
+      const token = localStorage.getItem('access_token');
+      const response = await fetch(`${window.location.origin}/api/factions`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to load factions');
+      }
+      
+      const data = await response.json();
+      console.log('Factions loaded:', data.length);
+      setFactions(data);
     } catch (error) {
       console.error('Error loading factions:', error);
     } finally {
