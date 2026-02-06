@@ -60,6 +60,26 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/faction/:factionCode"
+        element={
+          <PrivateRoute>
+            <AppLayout>
+              <FactionPage />
+            </AppLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/department/:departmentId"
+        element={
+          <PrivateRoute>
+            <AppLayout>
+              <DepartmentPage />
+            </AppLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
         path="*"
         element={<Navigate to="/" replace />}
       />
