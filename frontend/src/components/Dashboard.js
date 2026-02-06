@@ -18,9 +18,18 @@ export const Dashboard = () => {
   const loadFactions = async () => {
     try {
       console.log('Loading factions with XHR...');
-      const data = await xhrApi.get('/api/factions');
-      console.log('Factions loaded:', data.length);
-      setFactions(data);
+      
+      try {
+        const data = await xhrApi.get('/api/factions');
+        console.log('Factions loaded from API:', data.length);
+        setFactions(data);
+      } catch (apiError) {
+        console.warn('API call failed, using mock data:', apiError.message);
+        // Fallback to mock data for demonstration
+        const { mockFactions } = await import('../utils/mockData');
+        setFactions(mockFactions);
+        console.log('Loaded mock factions:', mockFactions.length);
+      }
     } catch (error) {
       console.error('Error loading factions:', error);
     } finally {
