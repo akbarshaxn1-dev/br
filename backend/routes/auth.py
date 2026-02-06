@@ -191,7 +191,7 @@ async def login(credentials: UserLogin, request: Request):
         "user": user_response
     }
 
-@router.post("/refresh", data-testid="refresh-token-endpoint")
+@router.post("/refresh")
 async def refresh_access_token(refresh_token: str):
     """Refresh access token using refresh token"""
     db = get_db()
