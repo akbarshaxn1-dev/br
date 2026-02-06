@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { xhrApi } from '../utils/xhr-api';
+import { api } from '../utils/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Building2, Users, FileText, BarChart3, Shield } from 'lucide-react';
@@ -17,10 +17,10 @@ export const Dashboard = () => {
 
   const loadFactions = async () => {
     try {
-      console.log('Loading factions with XHR...');
+      console.log('Loading factions...');
       
       try {
-        const data = await xhrApi.get('/api/factions');
+        const data = await api.get('/api/factions/');
         console.log('Factions loaded from API:', data.length);
         setFactions(data);
       } catch (apiError) {
