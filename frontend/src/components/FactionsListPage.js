@@ -16,8 +16,14 @@ export const FactionsListPage = () => {
 
   const loadFactions = async () => {
     try {
-      const data = await api.get('/api/factions');
-      setFactions(data);
+      try {
+        const data = await xhrApi.get('/api/factions');
+        setFactions(data);
+      } catch (apiError) {
+        console.warn('API failed, using mock data');
+        const { mockFactions } = await import('../utils/mockData');
+        setFactions(mockFactions);
+      }
     } catch (error) {
       console.error('Error:', error);
     } finally {
