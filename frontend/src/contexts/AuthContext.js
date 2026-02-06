@@ -1,7 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
-
-const API_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
+import { API_BASE_URL } from '../config';
 
 const AuthContext = createContext();
 
