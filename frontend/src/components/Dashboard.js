@@ -17,7 +17,9 @@ export const Dashboard = () => {
 
   const loadFactions = async () => {
     try {
+      console.log('Loading factions...');
       const response = await factionsService.getAll();
+      console.log('Factions loaded:', response.data);
       setFactions(response.data);
     } catch (error) {
       console.error('Error loading factions:', error);
