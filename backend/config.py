@@ -3,8 +3,8 @@ from datetime import timedelta
 
 class Config:
     # MongoDB
-    MONGO_URL = os.environ.get('MONGO_URL')
-    DB_NAME = os.environ.get('DB_NAME')
+    MONGO_URL = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+    DB_NAME = os.environ.get('DB_NAME', 'dept_management')
     
     # JWT
     JWT_SECRET = os.environ.get('JWT_SECRET', 'your-super-secret-key-change-in-production-2024')
