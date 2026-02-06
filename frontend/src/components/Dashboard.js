@@ -17,9 +17,10 @@ export const Dashboard = () => {
 
   const loadFactions = async () => {
     try {
-      console.log('Loading factions via direct fetch...');
+      console.log('Loading factions...');
       const token = localStorage.getItem('access_token');
-      const response = await fetch('https://dept-manager-4.preview.emergentagent.com/api/factions', {
+      // Use relative URL to avoid Mixed Content
+      const response = await fetch('/api/factions', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
