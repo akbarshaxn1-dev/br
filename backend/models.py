@@ -55,6 +55,31 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: str
+    nickname: str  # Игровой ник
+    position: Optional[str] = None  # Должность
+    vk_url: Optional[str] = None
+    role: RoleEnum
+    faction: Optional[FactionEnum] = None
+    department_id: Optional[str] = None
+
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    full_name: Optional[str] = None
+    nickname: Optional[str] = None
+    position: Optional[str] = None
+    vk_url: Optional[str] = None
+    role: Optional[RoleEnum] = None
+    faction: Optional[FactionEnum] = None
+    department_id: Optional[str] = None
+    is_active: Optional[bool] = None
+
+class AdminUserCreate(BaseModel):
+    """For admin to create users"""
+    email: EmailStr
+    password: str
+    full_name: str
+    nickname: str
+    position: Optional[str] = None
     vk_url: Optional[str] = None
     role: RoleEnum
     faction: Optional[FactionEnum] = None
