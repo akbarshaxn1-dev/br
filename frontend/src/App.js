@@ -66,6 +66,16 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/factions"
+        element={
+          <PrivateRoute>
+            <AppLayout>
+              <FactionsListPage />
+            </AppLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
         path="/faction/:factionCode"
         element={
           <PrivateRoute>
@@ -76,11 +86,61 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/departments"
+        element={
+          <PrivateRoute>
+            <AppLayout>
+              <DepartmentsListPage />
+            </AppLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
         path="/department/:departmentId"
         element={
           <PrivateRoute>
             <AppLayout>
               <DepartmentPage />
+            </AppLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/tables"
+        element={
+          <PrivateRoute>
+            <AppLayout>
+              <TablesPage />
+            </AppLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/topics"
+        element={
+          <PrivateRoute>
+            <AppLayout>
+              <TopicsPage />
+            </AppLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/audit"
+        element={
+          <PrivateRoute>
+            <AppLayout>
+              <AuditPage />
+            </AppLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <PrivateRoute>
+            <AppLayout>
+              <SettingsPage />
             </AppLayout>
           </PrivateRoute>
         }
