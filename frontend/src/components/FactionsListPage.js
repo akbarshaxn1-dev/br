@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { apiFetch } from '../utils/api-helper';
+import { api } from '../utils/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -16,21 +16,7 @@ export const FactionsListPage = () => {
 
   const loadFactions = async () => {
     try {
-      const token = localStorage.getItem('access_token');
-      // Use relative URL
-      const response = await fetch('/api/factions', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to load');
-      }
-      
-      const data = await response.json();
+      const data = await api.get('/api/factions');
       setFactions(data);
     } catch (error) {
       console.error('Error:', error);
