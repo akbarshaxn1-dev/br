@@ -1,0 +1,115 @@
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import io from 'socket.io-client';
+import { useAuth } from './AuthContext';
+
+const WebSocketContext = createContext();
+
+export const useWebSocket = () => {
+  const context = useContext(WebSocketContext);
+  if (!context) {
+    throw new Error('useWebSocket must be used within WebSocketProvider');
+  }
+  return context;
+};
+
+const SOCKET_URL = process.env.REACT_APP_BACKEND_URL;
+
+export const WebSocketProvider = ({ children }) => {
+  const { user, isAuthenticated } = useAuth();
+  const [socket, setSocket] = useState(null);
+  const [connected, setConnected] = useState(false);
+  const [listeners, setListeners] = useState({});
+
+  useEffect(() => {
+    if (!isAuthenticated || !user) {
+      if (socket) {
+        socket.disconnect();
+        setSocket(null);
+        setConnected(false);
+      }
+      return;
+    }
+
+    const newSocket = io(SOCKET_URL, {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5
+    });
+
+    newSocket.on('connect', () => {
+      console.log('WebSocket connected');
+      setConnected(true);
+      
+      // Authenticate
+      newSocket.emit('authenticate', {
+        user_id: user.id,
+        faction: user.faction
+      });
+    });
+
+    newSocket.on('disconnect', () => {
+      console.log('WebSocket disconnected');
+      setConnected(false);
+    });
+
+    newSocket.on('authenticated', (data) => {
+      console.log('WebSocket authenticated:', data);
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, [isAuthenticated, user]);
+
+  const on = useCallback((event, callback) => {
+    if (socket) {
+      socket.on(event, callback);
+      setListeners(prev => ({
+        ...prev,
+        [event]: [...(prev[event] || []), callback]
+      }));
+    }
+  }, [socket]);
+
+  const off = useCallback((event, callback) => {
+    if (socket) {
+      socket.off(event, callback);
+      setListeners(prev => {
+        const updated = { ...prev };
+        if (updated[event]) {
+          updated[event] = updated[event].filter(cb => cb !== callback);
+        }
+        return updated;
+      });
+    }
+  }, [socket]);
+
+  const emit = useCallback((event, data) => {
+    if (socket && connected) {
+      socket.emit(event, data);
+    }
+  }, [socket, connected]);
+
+  const joinDepartment = useCallback((departmentId) => {
+    emit('join_department', { department_id: departmentId });
+  }, [emit]);
+
+  const leaveDepartment = useCallback((departmentId) => {
+    emit('leave_department', { department_id: departmentId });
+  }, [emit]);
+
+  const value = {
+    socket,
+    connected,
+    on,
+    off,
+    emit,
+    joinDepartment,
+    leaveDepartment
+  };
+
+  return <WebSocketContext.Provider value={value}>{children}</WebSocketContext.Provider>;
+};
