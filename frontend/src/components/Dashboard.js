@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { factionsService } from '../services';
+import { apiFetch } from '../utils/api-helper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Building2, Users, FileText, BarChart3, Shield } from 'lucide-react';
@@ -17,24 +17,8 @@ export const Dashboard = () => {
 
   const loadFactions = async () => {
     try {
-      console.log('Loading factions...');
-      const token = localStorage.getItem('access_token');
-      const API_URL = 'https://dept-manager-4.preview.emergentagent.com';
-      console.log('Using API URL:', API_URL);
-      
-      const response = await fetch(`${API_URL}/api/factions`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to load factions: ${response.status}`);
-      }
-      
-      const data = await response.json();
+      console.log('Loading factions via apiFetch...');
+      const data = await apiFetch('/api/factions');
       console.log('Factions loaded:', data.length);
       setFactions(data);
     } catch (error) {
