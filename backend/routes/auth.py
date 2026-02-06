@@ -55,7 +55,7 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     
     return user
 
-@router.post("/register", response_model=UserResponse, data-testid="register-endpoint")
+@router.post("/register", response_model=UserResponse)
 async def register(user_data: UserCreate, request: Request):
     """Register a new user"""
     db = get_db()
