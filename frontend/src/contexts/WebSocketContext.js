@@ -29,7 +29,7 @@ export const WebSocketProvider = ({ children }) => {
       return;
     }
 
-    const newSocket = io(SOCKET_URL, {
+    const newSocket = io(API_BASE_URL, {
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,
