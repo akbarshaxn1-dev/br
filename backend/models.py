@@ -43,6 +43,8 @@ class UserBase(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     email: EmailStr
     full_name: str
+    nickname: Optional[str] = None
+    position: Optional[str] = None
     vk_url: Optional[str] = None
     role: RoleEnum
     faction: Optional[FactionEnum] = None
