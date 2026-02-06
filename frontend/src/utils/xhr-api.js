@@ -11,7 +11,8 @@ export const xhr = (endpoint, options = {}) => {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     const method = options.method || 'GET';
-    const url = endpoint.startsWith('http') ? endpoint : endpoint;
+    // Use relative URL to avoid mixed content issues
+    const url = endpoint.startsWith('http') ? endpoint : endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
     
     console.log('[XHR] Request:', method, url);
     
