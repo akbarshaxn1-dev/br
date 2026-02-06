@@ -95,6 +95,8 @@ class UserResponse(BaseModel):
     id: str
     email: str
     full_name: str
+    nickname: Optional[str] = None
+    position: Optional[str] = None
     vk_url: Optional[str]
     role: str
     faction: Optional[str]
