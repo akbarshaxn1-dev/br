@@ -26,12 +26,12 @@ export const FactionPage = () => {
 
   const loadData = async () => {
     try {
-      const [factionRes, deptsRes] = await Promise.all([
-        factionsService.getByCode(factionCode),
-        departmentsService.getByFaction(factionCode)
+      const [factionData, deptsData] = await Promise.all([
+        api.get(`/api/factions/${factionCode}`),
+        api.get(`/api/departments/faction/${factionCode}`)
       ]);
-      setFaction(factionRes.data);
-      setDepartments(deptsRes.data);
+      setFaction(factionData);
+      setDepartments(deptsData);
     } catch (error) {
       console.error('Error loading faction data:', error);
       toast.error('Ошибка загрузки данных фракции');
