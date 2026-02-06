@@ -328,7 +328,7 @@ async def verify_2fa(otp_code: str, current_user: dict = Depends(get_current_use
     
     return {"message": "2FA enabled successfully"}
 
-@router.get("/me", response_model=UserResponse, data-testid="get-current-user-endpoint")
+@router.get("/me", response_model=UserResponse)
 async def get_me(current_user: dict = Depends(get_current_user)):
     """Get current user info"""
     return current_user
