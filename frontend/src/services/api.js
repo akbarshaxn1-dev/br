@@ -1,9 +1,8 @@
 import axios from 'axios';
-
-const API_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
+import { API_BASE_URL } from '../config';
 
 const api = axios.create({
-  baseURL: `${API_URL}/api`
+  baseURL: `${API_BASE_URL}/api`
 });
 
 // Add auth token to requests
