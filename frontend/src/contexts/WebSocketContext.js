@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import io from 'socket.io-client';
 import { useAuth } from './AuthContext';
+import { API_BASE_URL } from '../config';
 
 const WebSocketContext = createContext();
 
@@ -11,8 +12,6 @@ export const useWebSocket = () => {
   }
   return context;
 };
-
-const SOCKET_URL = process.env.REACT_APP_BACKEND_URL || (typeof window !== 'undefined' ? window.location.origin : '');
 
 export const WebSocketProvider = ({ children }) => {
   const { user, isAuthenticated } = useAuth();
