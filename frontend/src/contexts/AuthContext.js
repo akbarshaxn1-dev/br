@@ -77,14 +77,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (userData) => {
-    const response = await axios.post(`${API_URL}/api/auth/register`, userData);
+    const response = await axios.post(`${API_BASE_URL}/api/auth/register`, userData);
     return response.data;
   };
 
   const logout = async () => {
     try {
       if (refreshToken) {
-        await axios.post(`${API_URL}/api/auth/logout`, null, {
+        await axios.post(`${API_BASE_URL}/api/auth/logout`, null, {
           params: { refresh_token: refreshToken },
           headers: { Authorization: `Bearer ${accessToken}` }
         });
