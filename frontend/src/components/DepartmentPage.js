@@ -323,6 +323,94 @@ export const DepartmentPage = () => {
             <RefreshCw className="mr-2 h-4 w-4" />
             Обновить
           </Button>
+          {canManageTopics && (
+            <Dialog open={topicsDialogOpen} onOpenChange={setTopicsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" data-testid="manage-topics-button">
+                  <Settings2 className="mr-2 h-4 w-4" />
+                  Темы
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Управление темами отдела</DialogTitle>
+                  <DialogDescription>
+                    Настройте темы лекций и тренировок для этого отдела
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="grid grid-cols-2 gap-6 py-4">
+                  {/* Lecture Topics */}
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-blue-600">Темы лекций</h4>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {lectureTopics.map((topic, idx) => (
+                        <div key={topic.id} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                          <span className="text-sm">{topic.topic}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => handleDeleteLectureTopic(topic.id)}
+                          >
+                            <Trash2 className="h-3 w-3 text-destructive" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Новая тема"
+                        value={newLectureTopic}
+                        onChange={(e) => setNewLectureTopic(e.target.value)}
+                        className="h-8"
+                      />
+                      <Button size="sm" onClick={handleAddLectureTopic} disabled={savingTopic}>
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Training Topics */}
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-purple-600">Темы тренировок</h4>
+                    <div className="space-y-2 max-h-48 overflow-y-auto">
+                      {trainingTopics.map((topic, idx) => (
+                        <div key={topic.id} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                          <span className="text-sm">{topic.topic}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6"
+                            onClick={() => handleDeleteTrainingTopic(topic.id)}
+                          >
+                            <Trash2 className="h-3 w-3 text-destructive" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Новая тема"
+                        value={newTrainingTopic}
+                        onChange={(e) => setNewTrainingTopic(e.target.value)}
+                        className="h-8"
+                      />
+                      <Button size="sm" onClick={handleAddTrainingTopic} disabled={savingTopic}>
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setTopicsDialogOpen(false)}>
+                    Закрыть
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          )}
           <Button onClick={addRow} variant="outline" data-testid="add-employee-button">
             <Plus className="mr-2 h-4 w-4" />
             Добавить сотрудника
