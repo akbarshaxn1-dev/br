@@ -5,8 +5,10 @@ import { api } from '../utils/api';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
+import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { ArrowLeft, Save, Plus, Trash2, Download, Loader2, RefreshCw } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { ArrowLeft, Save, Plus, Trash2, Download, Loader2, RefreshCw, Settings2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const DepartmentPage = () => {
@@ -21,6 +23,20 @@ export const DepartmentPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  
+  // Topics management
+  const [topicsDialogOpen, setTopicsDialogOpen] = useState(false);
+  const [newLectureTopic, setNewLectureTopic] = useState('');
+  const [newTrainingTopic, setNewTrainingTopic] = useState('');
+  const [savingTopic, setSavingTopic] = useState(false);
+
+  // Check if user can manage topics (department head or higher)
+  const canManageTopics = 
+    user?.role === 'developer' || 
+    user?.role === 'gs' || 
+    user?.role === 'zgs' ||
+    user?.role?.startsWith('leader_') ||
+    (user?.role === 'head_of_department' && user?.department_id === departmentId);
 
   // Load department data
   const loadData = useCallback(async () => {
@@ -35,11 +51,20 @@ export const DepartmentPage = () => {
       const factionResponse = await api.get(`/api/factions/${deptResponse.faction_code || 'fsb'}`);
       setFaction(factionResponse);
       
-      // Get topics for the faction
-      const [lecturesResponse, trainingsResponse] = await Promise.all([
-        api.get(`/api/topics/lectures/faction/${factionResponse.code}`),
-        api.get(`/api/topics/trainings/faction/${factionResponse.code}`)
-      ]);
+      // Get topics - try department-specific first, then faction
+      let lecturesResponse, trainingsResponse;
+      try {
+        [lecturesResponse, trainingsResponse] = await Promise.all([
+          api.get(`/api/topics/lectures/department/${departmentId}`),
+          api.get(`/api/topics/trainings/department/${departmentId}`)
+        ]);
+      } catch {
+        // Fallback to faction topics
+        [lecturesResponse, trainingsResponse] = await Promise.all([
+          api.get(`/api/topics/lectures/faction/${factionResponse.code}`),
+          api.get(`/api/topics/trainings/faction/${factionResponse.code}`)
+        ]);
+      }
       setLectureTopics(lecturesResponse);
       setTrainingTopics(trainingsResponse);
       
@@ -96,6 +121,62 @@ export const DepartmentPage = () => {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Add lecture topic
+  const handleAddLectureTopic = async () => {
+    if (!newLectureTopic.trim()) return;
+    setSavingTopic(true);
+    try {
+      await api.post(`/api/topics/lectures/department/${departmentId}`, { topic: newLectureTopic });
+      toast.success('Тема лекции добавлена');
+      setNewLectureTopic('');
+      loadData();
+    } catch (error) {
+      toast.error('Ошибка добавления темы');
+    } finally {
+      setSavingTopic(false);
+    }
+  };
+
+  // Delete lecture topic
+  const handleDeleteLectureTopic = async (topicId) => {
+    if (!confirm('Удалить эту тему лекции?')) return;
+    try {
+      await api.delete(`/api/topics/lectures/department/${departmentId}/${topicId}`);
+      toast.success('Тема удалена');
+      loadData();
+    } catch (error) {
+      toast.error('Ошибка удаления темы');
+    }
+  };
+
+  // Add training topic
+  const handleAddTrainingTopic = async () => {
+    if (!newTrainingTopic.trim()) return;
+    setSavingTopic(true);
+    try {
+      await api.post(`/api/topics/trainings/department/${departmentId}`, { topic: newTrainingTopic });
+      toast.success('Тема тренировки добавлена');
+      setNewTrainingTopic('');
+      loadData();
+    } catch (error) {
+      toast.error('Ошибка добавления темы');
+    } finally {
+      setSavingTopic(false);
+    }
+  };
+
+  // Delete training topic
+  const handleDeleteTrainingTopic = async (topicId) => {
+    if (!confirm('Удалить эту тему тренировки?')) return;
+    try {
+      await api.delete(`/api/topics/trainings/department/${departmentId}/${topicId}`);
+      toast.success('Тема удалена');
+      loadData();
+    } catch (error) {
+      toast.error('Ошибка удаления темы');
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
