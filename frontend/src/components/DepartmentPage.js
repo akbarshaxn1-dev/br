@@ -650,10 +650,120 @@ export const DepartmentPage = () => {
           </div>
         </CardContent>
       </Card>
+      )}
 
-      <div className="flex justify-between items-center text-sm text-muted-foreground">
-        <p>Последнее сохранение: {saving ? 'Сохранение...' : hasChanges ? 'Есть несохраненные изменения' : 'только что'}</p>
-        <p>Real-time обновления: Активно</p>
+      {/* Mobile Card View - for screenshots */}
+      {viewMode === 'cards' && (
+        <div className="space-y-3" data-testid="cards-view">
+          {tableData.rows.length === 0 ? (
+            <Card>
+              <CardContent className="py-8 text-center text-muted-foreground">
+                Нет сотрудников
+              </CardContent>
+            </Card>
+          ) : (
+            tableData.rows.map((row, rowIdx) => (
+              <Card key={rowIdx} className="overflow-hidden" data-testid={`employee-card-${rowIdx}`}>
+                <CardHeader className="py-3 px-4 bg-primary/5 border-b">
+                  <div className="flex items-center justify-between">
+                    <Input
+                      value={row.employee_name}
+                      onChange={(e) => updateCell(rowIdx, 'employee_name', e.target.value)}
+                      placeholder="Ник сотрудника"
+                      className="text-lg font-bold bg-transparent border-none p-0 h-auto focus-visible:ring-0"
+                    />
+                    <Button variant="ghost" size="icon" onClick={() => removeRow(rowIdx)} className="h-8 w-8 -mr-2">
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 space-y-4">
+                  {/* Лекции */}
+                  <div>
+                    <p className="text-xs font-semibold text-blue-600 mb-2">ЛЕКЦИИ</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {lectureTopics.map((topic) => (
+                        <div key={topic.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                          <span className="text-xs font-medium truncate mr-2">{topic.topic}</span>
+                          <button
+                            onClick={() => updateCell(rowIdx, topic.topic, row.cells[topic.topic] === 'present' ? 'absent' : 'present')}
+                            className={`px-2 py-1 rounded text-xs font-bold transition-colors ${
+                              row.cells[topic.topic] === 'present' 
+                                ? 'bg-green-500 text-white' 
+                                : 'bg-red-500 text-white'
+                            }`}
+                          >
+                            {row.cells[topic.topic] === 'present' ? '✓' : '✗'}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Тренировки */}
+                  <div>
+                    <p className="text-xs font-semibold text-purple-600 mb-2">ТРЕНИРОВКИ</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {trainingTopics.map((topic) => (
+                        <div key={topic.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                          <span className="text-xs font-medium truncate mr-2">{topic.topic}</span>
+                          <button
+                            onClick={() => updateCell(rowIdx, topic.topic, row.cells[topic.topic] === 'present' ? 'absent' : 'present')}
+                            className={`px-2 py-1 rounded text-xs font-bold transition-colors ${
+                              row.cells[topic.topic] === 'present' 
+                                ? 'bg-green-500 text-white' 
+                                : 'bg-red-500 text-white'
+                            }`}
+                          >
+                            {row.cells[topic.topic] === 'present' ? '✓' : '✗'}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Аттестация и Дни */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                      <p className="text-xs font-semibold text-amber-600 mb-1">АТТЕСТАЦИЯ</p>
+                      <Select
+                        value={row.cells.attestation || 'not_passed'}
+                        onValueChange={(value) => updateCell(rowIdx, 'attestation', value)}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="not_passed">Не сдана</SelectItem>
+                          <SelectItem value="passed">Сдана</SelectItem>
+                          <SelectItem value="excellent">Отлично</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                      <p className="text-xs font-semibold text-green-600 mb-1">ДНЕЙ НА ПОСТУ</p>
+                      <Input
+                        type="number"
+                        value={row.cells.days_count || 0}
+                        onChange={(e) => updateCell(rowIdx, 'days_count', parseInt(e.target.value) || 0)}
+                        className="h-8 text-center text-lg font-bold"
+                        min="0"
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
+
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+        <p>{saving ? 'Сохранение...' : hasChanges ? '⚠️ Есть несохраненные изменения' : '✓ Сохранено'}</p>
+        <p className="flex items-center gap-1">
+          {connected ? <Wifi className="h-3 w-3 text-green-500" /> : <WifiOff className="h-3 w-3 text-red-500" />}
+          Real-time: {connected ? 'Активно' : 'Отключено'}
+        </p>
       </div>
     </div>
   );
