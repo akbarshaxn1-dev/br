@@ -1,19 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { api } from '../utils/api';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { ArrowLeft, Save, Plus, Trash2, Download, Loader2, RefreshCw, Settings2 } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Download, Loader2, RefreshCw, Settings2, Archive, Wifi, WifiOff } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const DepartmentPage = () => {
-  const { departmentId } = useParams();
+  const { departmentId, weekId } = useParams();
   const { user } = useAuth();
+  const { connected, joinDepartment, leaveDepartment, on, off } = useWebSocket();
   const [department, setDepartment] = useState(null);
   const [faction, setFaction] = useState(null);
   const [currentWeek, setCurrentWeek] = useState(null);
@@ -37,6 +40,27 @@ export const DepartmentPage = () => {
     user?.role === 'zgs' ||
     user?.role?.startsWith('leader_') ||
     (user?.role === 'head_of_department' && user?.department_id === departmentId);
+
+  // WebSocket real-time updates
+  useEffect(() => {
+    if (departmentId) {
+      joinDepartment(departmentId);
+      
+      const handleTableUpdate = (data) => {
+        if (data.department_id === departmentId && data.updated_by !== user?.full_name) {
+          toast.info(`${data.updated_by} обновил таблицу`);
+          loadData();
+        }
+      };
+      
+      on('table_updated', handleTableUpdate);
+      
+      return () => {
+        leaveDepartment(departmentId);
+        off('table_updated', handleTableUpdate);
+      };
+    }
+  }, [departmentId, joinDepartment, leaveDepartment, on, off, user?.full_name]);
 
   // Load department data
   const loadData = useCallback(async () => {
