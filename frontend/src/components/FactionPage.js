@@ -8,7 +8,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Alert, AlertDescription } from './ui/alert';
-import { Plus, Building2, Users, ArrowLeft, Trash2, Loader2, AlertTriangle } from 'lucide-react';
+import { Plus, Building2, Users, ArrowLeft, Trash2, Loader2, AlertTriangle, Award } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const FactionPage = () => {
