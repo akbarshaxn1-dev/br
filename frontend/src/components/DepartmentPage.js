@@ -10,7 +10,7 @@ import { Label } from './ui/label';
 import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { ArrowLeft, Save, Plus, Trash2, Download, Loader2, RefreshCw, Settings2, Archive, Wifi, WifiOff } from 'lucide-react';
+import { ArrowLeft, Save, Plus, Trash2, Download, Loader2, RefreshCw, Settings2, Archive, Wifi, WifiOff, Table, LayoutGrid } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const DepartmentPage = () => {
@@ -26,6 +26,7 @@ export const DepartmentPage = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [viewMode, setViewMode] = useState('table'); // 'table' or 'cards'
   
   // Topics management
   const [topicsDialogOpen, setTopicsDialogOpen] = useState(false);
