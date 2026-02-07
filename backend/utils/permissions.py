@@ -57,7 +57,7 @@ class Permissions:
     def can_edit_table(role: str, user_faction: Optional[str],
                       department_faction: str, department_id: str,
                       user_department_id: Optional[str]) -> bool:
-        """Check if user can edit table data"""
+        """Check if user can edit table data (mark attendance)"""
         # Developer, GS, ZGS can edit all
         if role in [RoleEnum.DEVELOPER, RoleEnum.GS, RoleEnum.ZGS]:
             return True
@@ -66,10 +66,35 @@ class Permissions:
         if role.startswith("leader_") and user_faction == department_faction:
             return True
         
-        # Head and deputy can edit their department tables
+        # Head and deputy can edit their department tables (mark attendance)
         if role in [RoleEnum.HEAD_OF_DEPARTMENT, RoleEnum.DEPUTY_HEAD] and user_department_id == department_id:
             return True
         
+        return False
+    
+    @staticmethod
+    def can_manage_topics(role: str, user_faction: Optional[str],
+                         department_faction: str, department_id: str,
+                         user_department_id: Optional[str]) -> bool:
+        """Check if user can manage topics (lectures/trainings)
+        - Developer, GS, ZGS can manage all
+        - Leaders can manage for their faction
+        - Head of department can manage for their department ONLY
+        - Deputy CANNOT manage topics (only mark attendance)
+        """
+        # Developer, GS, ZGS can manage all
+        if role in [RoleEnum.DEVELOPER, RoleEnum.GS, RoleEnum.ZGS]:
+            return True
+        
+        # Leaders can manage topics in their faction
+        if role.startswith("leader_") and user_faction == department_faction:
+            return True
+        
+        # Head of department can manage ONLY their department topics
+        if role == RoleEnum.HEAD_OF_DEPARTMENT and user_department_id == department_id:
+            return True
+        
+        # Deputy CANNOT manage topics
         return False
     
     @staticmethod
