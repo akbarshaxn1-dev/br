@@ -480,6 +480,30 @@ export const DepartmentPage = () => {
         </div>
       </div>
 
+      {/* View Toggle - visible on mobile */}
+      <div className="flex sm:hidden justify-center gap-2 mb-4">
+        <Button
+          variant={viewMode === 'table' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setViewMode('table')}
+          data-testid="view-table-btn"
+        >
+          <Table className="h-4 w-4 mr-2" />
+          Таблица
+        </Button>
+        <Button
+          variant={viewMode === 'cards' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setViewMode('cards')}
+          data-testid="view-cards-btn"
+        >
+          <LayoutGrid className="h-4 w-4 mr-2" />
+          Карточки
+        </Button>
+      </div>
+
+      {/* Table View */}
+      {viewMode === 'table' && (
       <Card>
         <CardHeader className="bg-yellow-500/10 border-b py-3 sm:py-4">
           <CardTitle className="text-yellow-600 dark:text-yellow-500 text-center text-base sm:text-xl">
