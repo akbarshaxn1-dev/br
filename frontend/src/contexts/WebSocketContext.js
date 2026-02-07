@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import io from 'socket.io-client';
 import { useAuth } from './AuthContext';
-import { API_BASE_URL } from '../config';
 
 const WebSocketContext = createContext();
 
@@ -17,7 +16,7 @@ export const WebSocketProvider = ({ children }) => {
   const { user, isAuthenticated } = useAuth();
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
-  const [listeners, setListeners] = useState({});
+  const listenersRef = useRef({});
 
   useEffect(() => {
     if (!isAuthenticated || !user) {
@@ -29,11 +28,16 @@ export const WebSocketProvider = ({ children }) => {
       return;
     }
 
-    const newSocket = io(API_BASE_URL, {
+    // Use the backend URL from environment
+    const wsUrl = process.env.REACT_APP_BACKEND_URL || window.location.origin;
+    
+    const newSocket = io(wsUrl, {
+      path: '/socket.io',
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,
-      reconnectionAttempts: 5
+      reconnectionAttempts: 10,
+      timeout: 20000
     });
 
     newSocket.on('connect', () => {
