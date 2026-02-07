@@ -454,20 +454,21 @@ export const DepartmentPage = () => {
               </DialogContent>
             </Dialog>
           )}
-          <Button onClick={addRow} variant="outline" data-testid="add-employee-button">
-            <Plus className="mr-2 h-4 w-4" />
-            Добавить сотрудника
+          <Button onClick={addRow} variant="outline" size="sm" data-testid="add-employee-button" className="text-xs sm:text-sm">
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Сотрудник</span>
           </Button>
           <Button 
             onClick={handleSave} 
             disabled={saving || !hasChanges} 
             data-testid="save-table-button"
-            className={hasChanges ? 'bg-green-600 hover:bg-green-700' : ''}
+            size="sm"
+            className={`text-xs sm:text-sm ${hasChanges ? 'bg-green-600 hover:bg-green-700' : ''}`}
           >
             {saving ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 sm:mr-2 animate-spin" />
             ) : (
-              <Save className="mr-2 h-4 w-4" />
+              <Save className="h-4 w-4 sm:mr-2" />
             )}
             {saving ? 'Сохранение...' : hasChanges ? 'Сохранить*' : 'Сохранить'}
           </Button>
