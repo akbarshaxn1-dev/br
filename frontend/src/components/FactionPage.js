@@ -191,6 +191,14 @@ export const FactionPage = () => {
             <CardTitle className="text-lg">Быстрые действия</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
+            {canManageDepartments && (
+              <Link to={`/faction/${factionCode}/senior-staff`}>
+                <Button variant="outline" className="w-full justify-start" data-testid="senior-staff-button">
+                  <Award className="mr-2 h-4 w-4 text-amber-500" />
+                  Старший состав
+                </Button>
+              </Link>
+            )}
             <Link to="/topics">
               <Button variant="outline" className="w-full justify-start">
                 Управление темами лекций и тренировок
