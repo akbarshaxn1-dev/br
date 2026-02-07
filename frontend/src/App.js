@@ -15,6 +15,7 @@ import { TopicsPage } from './components/TopicsPage';
 import { AuditPage } from './components/AuditPage';
 import { SettingsPage } from './components/SettingsPage';
 import { AdminPage } from './components/AdminPage';
+import { WeekArchivePage } from './components/WeekArchivePage';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import './App.css';
