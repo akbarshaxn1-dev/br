@@ -44,24 +44,44 @@ export const DepartmentPage = () => {
 
   // WebSocket real-time updates
   useEffect(() => {
-    if (departmentId) {
+    if (departmentId && connected) {
       joinDepartment(departmentId);
+      console.log('Joined department room:', departmentId);
       
       const handleTableUpdate = (data) => {
+        console.log('Received table_updated event:', data);
         if (data.department_id === departmentId && data.updated_by !== user?.full_name) {
-          toast.info(`${data.updated_by} обновил таблицу`);
+          toast.info(`${data.updated_by} обновил таблицу`, {
+            action: {
+              label: 'Обновить',
+              onClick: () => loadData()
+            }
+          });
+          // Auto-reload if no unsaved changes
+          if (!hasChanges) {
+            loadData();
+          }
+        }
+      };
+
+      const handleStructureChange = (data) => {
+        console.log('Received structure_changed event:', data);
+        if (data.department_id === departmentId) {
+          toast.info('Структура таблицы изменена. Обновите страницу.');
           loadData();
         }
       };
       
       on('table_updated', handleTableUpdate);
+      on('structure_changed', handleStructureChange);
       
       return () => {
         leaveDepartment(departmentId);
         off('table_updated', handleTableUpdate);
+        off('structure_changed', handleStructureChange);
       };
     }
-  }, [departmentId, joinDepartment, leaveDepartment, on, off, user?.full_name]);
+  }, [departmentId, connected, joinDepartment, leaveDepartment, on, off, user?.full_name, hasChanges]);
 
   // Load department data
   const loadData = useCallback(async () => {
