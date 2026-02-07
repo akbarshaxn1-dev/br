@@ -326,36 +326,55 @@ export const DepartmentPage = () => {
   }
 
   return (
-    <div className="container py-8 space-y-6" data-testid="department-page">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="container py-4 sm:py-8 px-4 space-y-4 sm:space-y-6" data-testid="department-page">
+      {/* Header - Mobile optimized */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <Link to={faction ? `/faction/${faction.code}` : '/factions'}>
             <Button variant="outline" size="icon" data-testid="back-button">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
-          <div>
-            <h1 className="text-3xl font-bold">{department?.name}</h1>
-            <p className="text-muted-foreground">
-              {faction?.name} | Период: {formatWeekPeriod()}
-            </p>
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-3xl font-bold truncate">{department?.name}</h1>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="truncate">{faction?.name} | {formatWeekPeriod()}</span>
+              {connected ? (
+                <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/30 text-xs whitespace-nowrap">
+                  <Wifi className="h-3 w-3 mr-1" />
+                  Live
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="bg-red-500/10 text-red-600 border-red-500/30 text-xs whitespace-nowrap">
+                  <WifiOff className="h-3 w-3 mr-1" />
+                  Offline
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <Button onClick={loadData} variant="outline" data-testid="refresh-button">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Обновить
+        {/* Actions - Responsive */}
+        <div className="flex flex-wrap gap-2">
+          <Link to={`/department/${departmentId}/archive`}>
+            <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+              <Archive className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Архив</span>
+            </Button>
+          </Link>
+          <Button onClick={loadData} variant="outline" size="sm" data-testid="refresh-button" className="text-xs sm:text-sm">
+            <RefreshCw className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Обновить</span>
           </Button>
           {canManageTopics && (
             <Dialog open={topicsDialogOpen} onOpenChange={setTopicsDialogOpen}>
               <DialogTrigger asChild>
-                <Button variant="outline" data-testid="manage-topics-button">
-                  <Settings2 className="mr-2 h-4 w-4" />
-                  Темы
+                <Button variant="outline" size="sm" data-testid="manage-topics-button" className="text-xs sm:text-sm">
+                  <Settings2 className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Темы</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Управление темами отдела</DialogTitle>
                   <DialogDescription>
