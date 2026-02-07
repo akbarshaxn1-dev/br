@@ -41,7 +41,7 @@ export const WebSocketProvider = ({ children }) => {
     });
 
     newSocket.on('connect', () => {
-      console.log('WebSocket connected');
+      console.log('WebSocket connected, socket id:', newSocket.id);
       setConnected(true);
       
       // Authenticate
@@ -51,13 +51,21 @@ export const WebSocketProvider = ({ children }) => {
       });
     });
 
-    newSocket.on('disconnect', () => {
-      console.log('WebSocket disconnected');
+    newSocket.on('connect_error', (error) => {
+      console.log('WebSocket connection error:', error.message);
+    });
+
+    newSocket.on('disconnect', (reason) => {
+      console.log('WebSocket disconnected:', reason);
       setConnected(false);
     });
 
     newSocket.on('authenticated', (data) => {
       console.log('WebSocket authenticated:', data);
+    });
+
+    newSocket.on('error', (error) => {
+      console.log('WebSocket error:', error);
     });
 
     setSocket(newSocket);
@@ -70,23 +78,19 @@ export const WebSocketProvider = ({ children }) => {
   const on = useCallback((event, callback) => {
     if (socket) {
       socket.on(event, callback);
-      setListeners(prev => ({
-        ...prev,
-        [event]: [...(prev[event] || []), callback]
-      }));
+      if (!listenersRef.current[event]) {
+        listenersRef.current[event] = [];
+      }
+      listenersRef.current[event].push(callback);
     }
   }, [socket]);
 
   const off = useCallback((event, callback) => {
     if (socket) {
       socket.off(event, callback);
-      setListeners(prev => {
-        const updated = { ...prev };
-        if (updated[event]) {
-          updated[event] = updated[event].filter(cb => cb !== callback);
-        }
-        return updated;
-      });
+      if (listenersRef.current[event]) {
+        listenersRef.current[event] = listenersRef.current[event].filter(cb => cb !== callback);
+      }
     }
   }, [socket]);
 
