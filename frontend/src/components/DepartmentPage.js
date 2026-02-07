@@ -470,42 +470,42 @@ export const DepartmentPage = () => {
             ) : (
               <Save className="h-4 w-4 sm:mr-2" />
             )}
-            {saving ? 'Сохранение...' : hasChanges ? 'Сохранить*' : 'Сохранить'}
+            <span className="hidden sm:inline">{saving ? 'Сохранение...' : hasChanges ? 'Сохранить*' : 'Сохранить'}</span>
           </Button>
-          <Button variant="outline" onClick={exportToExcel} data-testid="export-button">
-            <Download className="mr-2 h-4 w-4" />
-            Excel
+          <Button variant="outline" onClick={exportToExcel} data-testid="export-button" size="sm" className="text-xs sm:text-sm">
+            <Download className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Excel</span>
           </Button>
         </div>
       </div>
 
       <Card>
-        <CardHeader className="bg-yellow-500/10 border-b">
-          <CardTitle className="text-yellow-600 dark:text-yellow-500 text-center text-xl">
+        <CardHeader className="bg-yellow-500/10 border-b py-3 sm:py-4">
+          <CardTitle className="text-yellow-600 dark:text-yellow-500 text-center text-base sm:text-xl">
             {department?.name?.toUpperCase()}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-sm">
+            <table className="w-full border-collapse text-xs sm:text-sm">
               <thead>
                 <tr className="bg-muted/50 border-b-2">
-                  <th className="px-3 py-3 text-left font-bold border-r min-w-[150px] sticky left-0 bg-muted/50 z-10">
-                    Nick Name
+                  <th className="px-2 sm:px-3 py-2 sm:py-3 text-left font-bold border-r min-w-[120px] sm:min-w-[150px] sticky left-0 bg-muted/50 z-10">
+                    Nick
                   </th>
-                  <th colSpan={lectureTopics.length} className="px-3 py-2 text-center font-bold border-r bg-blue-500/10">
+                  <th colSpan={lectureTopics.length} className="px-2 sm:px-3 py-2 text-center font-bold border-r bg-blue-500/10">
                     Лекции
                   </th>
-                  <th colSpan={trainingTopics.length} className="px-3 py-2 text-center font-bold border-r bg-purple-500/10">
+                  <th colSpan={trainingTopics.length} className="px-2 sm:px-3 py-2 text-center font-bold border-r bg-purple-500/10">
                     Тренировки
                   </th>
-                  <th className="px-3 py-2 text-center font-bold border-r bg-amber-500/10">
-                    Аттестация
+                  <th className="px-2 sm:px-3 py-2 text-center font-bold border-r bg-amber-500/10">
+                    Аттест.
                   </th>
-                  <th className="px-3 py-2 text-center font-bold bg-green-500/10">
-                    Кол-во дней на посту
+                  <th className="px-2 sm:px-3 py-2 text-center font-bold bg-green-500/10">
+                    Дни
                   </th>
-                  <th className="px-3 py-2 text-center font-bold w-[60px]">
+                  <th className="px-2 py-2 text-center font-bold w-[40px] sm:w-[60px]">
                     
                   </th>
                 </tr>
