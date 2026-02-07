@@ -110,6 +110,26 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/department/:departmentId/archive"
+        element={
+          <PrivateRoute>
+            <AppLayout>
+              <WeekArchivePage />
+            </AppLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/department/:departmentId/week/:weekId"
+        element={
+          <PrivateRoute>
+            <AppLayout>
+              <DepartmentPage />
+            </AppLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
         path="/tables"
         element={
           <PrivateRoute>
