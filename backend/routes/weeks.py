@@ -241,4 +241,16 @@ async def update_week_table_data(week_id: str, data: TableDataUpdate, current_us
         new_value={"rows_count": len(rows_data)}
     )
     
+    # Broadcast via WebSocket
+    try:
+        from websocket_server import broadcast_table_update
+        import asyncio
+        asyncio.create_task(broadcast_table_update(
+            department['id'], 
+            week_id, 
+            current_user.get('full_name', current_user['email'])
+        ))
+    except Exception as e:
+        print(f"WebSocket broadcast error: {e}")
+    
     return {"message": "Table data updated successfully"}
