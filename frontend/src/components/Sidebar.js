@@ -10,7 +10,8 @@ import {
   FileText,
   Settings,
   ClipboardList,
-  History
+  History,
+  UserCog
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -18,6 +19,7 @@ export const Sidebar = () => {
 
   const canAccessAllFactions = ['developer', 'gs', 'zgs'].includes(user?.role);
   const canViewAudit = ['developer', 'gs', 'zgs'].includes(user?.role);
+  const canAccessAdmin = ['developer', 'gs', 'zgs'].includes(user?.role);
 
   const navItems = [
     {
@@ -48,13 +50,19 @@ export const Sidebar = () => {
       title: 'Лекции и Тренировки',
       href: '/topics',
       icon: ClipboardList,
-      show: user?.role?.startsWith('leader_') || canAccessAllFactions
+      show: user?.role?.startsWith('leader_') || canAccessAllFactions || user?.role === 'head_of_department'
     },
     {
       title: 'Журнал действий',
       href: '/audit',
       icon: History,
       show: canViewAudit
+    },
+    {
+      title: 'Админ-панель',
+      href: '/admin',
+      icon: UserCog,
+      show: canAccessAdmin
     },
     {
       title: 'Настройки',
