@@ -166,13 +166,12 @@ async def create_user(
     
     # Log action
     await log_action(
-        db=db,
         user_id=current_user['id'],
         user_email=current_user['email'],
         action="user_created",
         resource_type="user",
         resource_id=user_doc['id'],
-        details={"nickname": user_data.nickname, "role": user_data.role},
+        new_value={"nickname": user_data.nickname, "role": user_data.role},
         ip_address=request.client.host if request.client else None
     )
     
@@ -231,13 +230,13 @@ async def update_user(
     
     # Log action
     await log_action(
-        db=db,
         user_id=current_user['id'],
         user_email=current_user['email'],
         action="user_updated",
         resource_type="user",
         resource_id=user_id,
-        details={"old_values": old_values, "new_values": update_data},
+        old_value=old_values,
+        new_value=update_data,
         ip_address=request.client.host if request.client else None
     )
     
@@ -298,13 +297,12 @@ async def delete_user(
     
     # Log action
     await log_action(
-        db=db,
         user_id=current_user['id'],
         user_email=current_user['email'],
         action="user_deleted",
         resource_type="user",
         resource_id=user_id,
-        details={"nickname": user.get('nickname'), "email": user['email']},
+        old_value={"nickname": user.get('nickname'), "email": user['email']},
         ip_address=request.client.host if request.client else None
     )
     
@@ -335,13 +333,11 @@ async def activate_user(
     
     # Log action
     await log_action(
-        db=db,
         user_id=current_user['id'],
         user_email=current_user['email'],
         action="user_activated",
         resource_type="user",
         resource_id=user_id,
-        details={},
         ip_address=request.client.host if request.client else None
     )
     
@@ -462,13 +458,12 @@ async def impersonate_user(
     
     # Log action
     await log_action(
-        db=db,
         user_id=current_user['id'],
         user_email=current_user['email'],
         action="user_impersonated",
         resource_type="user",
         resource_id=user_id,
-        details={"target_email": target_user['email']},
+        new_value={"target_email": target_user['email']},
         ip_address=request.client.host if request.client else None
     )
     
