@@ -42,44 +42,62 @@ export const DepartmentPage = () => {
     user?.role?.startsWith('leader_') ||
     (user?.role === 'head_of_department' && user?.department_id === departmentId);
 
-  // WebSocket real-time updates
+  // WebSocket real-time updates with polling fallback
   useEffect(() => {
-    if (departmentId && connected) {
-      joinDepartment(departmentId);
-      console.log('Joined department room:', departmentId);
-      
-      const handleTableUpdate = (data) => {
-        console.log('Received table_updated event:', data);
-        if (data.department_id === departmentId && data.updated_by !== user?.full_name) {
-          toast.info(`${data.updated_by} обновил таблицу`, {
-            action: {
-              label: 'Обновить',
-              onClick: () => loadData()
+    let pollInterval = null;
+
+    if (departmentId) {
+      if (connected) {
+        // WebSocket connected - use real-time updates
+        joinDepartment(departmentId);
+        console.log('Joined department room:', departmentId);
+        
+        const handleTableUpdate = (data) => {
+          console.log('Received table_updated event:', data);
+          if (data.department_id === departmentId && data.updated_by !== user?.full_name) {
+            toast.info(`${data.updated_by} обновил таблицу`, {
+              action: {
+                label: 'Обновить',
+                onClick: () => loadData()
+              }
+            });
+            // Auto-reload if no unsaved changes
+            if (!hasChanges) {
+              loadData();
             }
-          });
-          // Auto-reload if no unsaved changes
+          }
+        };
+
+        const handleStructureChange = (data) => {
+          console.log('Received structure_changed event:', data);
+          if (data.department_id === departmentId) {
+            toast.info('Структура таблицы изменена. Обновите страницу.');
+            loadData();
+          }
+        };
+        
+        on('table_updated', handleTableUpdate);
+        on('structure_changed', handleStructureChange);
+        
+        return () => {
+          leaveDepartment(departmentId);
+          off('table_updated', handleTableUpdate);
+          off('structure_changed', handleStructureChange);
+        };
+      } else {
+        // WebSocket not connected - use polling fallback (every 30 seconds)
+        pollInterval = setInterval(() => {
           if (!hasChanges) {
             loadData();
           }
-        }
-      };
-
-      const handleStructureChange = (data) => {
-        console.log('Received structure_changed event:', data);
-        if (data.department_id === departmentId) {
-          toast.info('Структура таблицы изменена. Обновите страницу.');
-          loadData();
-        }
-      };
-      
-      on('table_updated', handleTableUpdate);
-      on('structure_changed', handleStructureChange);
-      
-      return () => {
-        leaveDepartment(departmentId);
-        off('table_updated', handleTableUpdate);
-        off('structure_changed', handleStructureChange);
-      };
+        }, 30000);
+        
+        return () => {
+          if (pollInterval) {
+            clearInterval(pollInterval);
+          }
+        };
+      }
     }
   }, [departmentId, connected, joinDepartment, leaveDepartment, on, off, user?.full_name, hasChanges]);
 
