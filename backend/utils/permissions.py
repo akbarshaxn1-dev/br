@@ -109,6 +109,20 @@ class Permissions:
         return user_faction == target_faction
     
     @staticmethod
+    def can_manage_faction(role: str, user_faction: Optional[str],
+                          target_faction: str) -> bool:
+        """Check if user can manage a specific faction (senior staff, etc.)"""
+        # Developer, GS, ZGS can manage all factions
+        if role in [RoleEnum.DEVELOPER, RoleEnum.GS, RoleEnum.ZGS]:
+            return True
+        
+        # Leaders can manage their own faction
+        if role.startswith("leader_") and user_faction == target_faction:
+            return True
+        
+        return False
+    
+    @staticmethod
     def requires_2fa(role: str) -> bool:
         """Check if role requires 2FA"""
         return role in [
