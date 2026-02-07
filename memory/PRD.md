@@ -1,14 +1,14 @@
-# Единый Портал Управления Отделами - Product Requirements Document
+# Единый Портал Управления Отделами - PRD
 
 ## Обзор проекта
-Корпоративная платформа для управления различными государственными фракциями. Система заменяет Google/Excel таблицы и ручную отчетность.
+Корпоративная платформа для централизованного управления государственными фракциями. Заменяет Google/Excel таблицы и ручную отчетность.
 
 ## Архитектура
 - **Backend:** FastAPI (Python) + MongoDB
 - **Frontend:** React + Tailwind CSS + Shadcn/UI
 - **Authentication:** JWT с Refresh Tokens, RBAC
 
-## Фракции
+## Фракции (8 штук)
 1. Правительство (gov)
 2. ФСБ (fsb)
 3. ГИБДД (gibdd)
@@ -19,144 +19,180 @@
 8. ФСИН (fsin)
 
 ## Роли и права доступа
-- **Developer (Vadim Smirnov):** Полный root доступ, управление всем
-- **GS/ZGS:** Почти полный доступ к фракциям и отделам
-- **Лидеры фракций:** Управление только своей фракцией
-- **Начальники отделов:** Редактирование таблиц своего отдела
 
-## Реализованные функции
+| Роль | Доступ | Возможности |
+|------|--------|-------------|
+| Developer (Vadim Smirnov) | Полный root | Всё + имитация пользователей, восстановление данных |
+| ГС/ЗГС | Почти полный | Все фракции, админ-панель, логи |
+| Лидеры фракций | Своя фракция | CRUD отделов, темы, таблицы |
+| Начальник отдела | Свой отдел | Таблицы, темы отдела |
+| Заместитель | Свой отдел | Редактирование таблиц |
 
-### Авторизация ✅
+## Реализованные функции ✅
+
+### Авторизация
 - JWT токены (access + refresh)
-- Безопасное хранение паролей (bcrypt)
-- Поддержка 2FA (TOTP) для высоких ролей
+- bcrypt хеширование паролей
+- Поддержка 2FA (TOTP)
 
-### Dashboard ✅
-- Отображение всех 8 фракций
-- Статистика (кол-во фракций, отделов)
-- Быстрый переход к фракциям
+### Админ-панель (NEW)
+- Статистика (пользователи, фракции, отделы, входы за 24ч)
+- Создание пользователей (ник, имя, email, пароль, должность, VK, роль, фракция, отдел)
+- Редактирование пользователей
+- Деактивация/активация
+- Фильтры по фракции и роли
+- Поиск по нику/имени/email
+- Блок поддержки разработчика
 
-### Фракции ✅
-- Просмотр списка фракций
-- Просмотр деталей фракции
-- Создание отделов в фракции
-- RBAC фильтрация по роли пользователя
+### Dashboard
+- 8 фракций с быстрым переходом
+- Статистика системы
 
-### Отделы ✅
-- Список отделов по фракции
+### Фракции
+- Список с RBAC фильтрацией
+- Детали фракции
 - Создание/удаление отделов
-- Управление структурой таблицы
 
-### Динамические таблицы (Google Sheet стиль) ✅
-- Колонки: Nick Name, Лекции, Тренировки, Аттестация, Дней на посту
+### Отделы
+- Список по фракции
+- Управление структурой
+
+### Динамические таблицы (Google Sheet стиль)
+- Nick Name, Лекции, Тренировки, Аттестация, Дней на посту
 - Дропдауны "Был" / "Не был" с цветовой кодировкой
 - Inline редактирование
-- Автоматическое сохранение
+- Автосохранение
 - Экспорт в CSV/Excel
+- **Управление темами прямо из таблицы (NEW)**
 
-### Темы лекций и тренировок ✅
-- Управление темами по фракциям
-- CRUD операции для лекций
-- CRUD операции для тренировок
+### Темы лекций и тренировок
+- CRUD для фракций (лидеры)
+- **CRUD для отделов (начальники отделов)** (NEW)
+- Наследование от фракции к отделу
 
-### Журнал действий (Audit Log) ✅
-- Логирование всех действий
+### Журнал действий
+- Полное логирование (кто, когда, что, IP)
 - Фильтрация по типу ресурса
-- Отображение IP адресов
-- История входов/выходов
+- История входов
 
-### Недельная система ✅
-- Автоматическое создание недели (Пн-Вс)
-- Хранение данных таблиц по неделям
-- Отображение текущего периода
+### Недельная система
+- Автоматическое создание (Пн-Вс)
+- Хранение по неделям
 
-### Настройки ✅
-- Информация о профиле
-- Переключение темы (тёмная/светлая)
-- Статус 2FA
-
-### UI/UX ✅
+### UI/UX
 - Тёмная корпоративная тема
+- Светлая тема
 - Адаптивный дизайн
-- Sidebar навигация
-- Shadcn/UI компоненты
+- Sidebar навигация (8 пунктов)
 
 ## API Endpoints
+
+### Auth
 ```
-POST /api/auth/login - Авторизация
-POST /api/auth/register - Регистрация
-GET  /api/auth/me - Текущий пользователь
-POST /api/auth/refresh - Обновление токена
-
-GET  /api/factions/ - Список фракций
-GET  /api/factions/{code} - Детали фракции
-
-GET  /api/departments/{id} - Информация об отделе
-GET  /api/departments/faction/{code} - Отделы фракции
-POST /api/departments/faction/{code} - Создать отдел
-DELETE /api/departments/{id} - Удалить отдел
-
-GET  /api/topics/lectures/faction/{code} - Темы лекций
-POST /api/topics/lectures/faction/{code} - Создать тему лекции
-DELETE /api/topics/lectures/{id} - Удалить тему
-
-GET  /api/topics/trainings/faction/{code} - Темы тренировок
-POST /api/topics/trainings/faction/{code} - Создать тему тренировки
-DELETE /api/topics/trainings/{id} - Удалить тему
-
-GET  /api/weeks/department/{id}/current - Текущая неделя
-GET  /api/weeks/{id}/table-data - Данные таблицы
-PUT  /api/weeks/{id}/table-data - Обновить данные
-
-GET  /api/audit/logs - Журнал действий
+POST /api/auth/login
+POST /api/auth/register
+GET  /api/auth/me
+POST /api/auth/refresh
 ```
 
-## Учётные данные для тестирования
+### Admin (NEW)
+```
+GET  /api/admin/stats
+GET  /api/admin/users
+GET  /api/admin/users/{id}
+POST /api/admin/users
+PUT  /api/admin/users/{id}
+DELETE /api/admin/users/{id}
+POST /api/admin/users/{id}/activate
+GET  /api/admin/roles
+GET  /api/admin/factions-list
+GET  /api/admin/departments-list
+POST /api/admin/impersonate/{id}
+```
+
+### Factions & Departments
+```
+GET  /api/factions/
+GET  /api/factions/{code}
+GET  /api/departments/{id}
+GET  /api/departments/faction/{code}
+POST /api/departments/faction/{code}
+DELETE /api/departments/{id}
+```
+
+### Topics
+```
+GET  /api/topics/lectures/faction/{code}
+POST /api/topics/lectures/faction/{code}
+DELETE /api/topics/lectures/{id}
+GET  /api/topics/lectures/department/{id}    (NEW)
+POST /api/topics/lectures/department/{id}    (NEW)
+DELETE /api/topics/lectures/department/{id}/{topic_id}  (NEW)
+```
+
+### Weeks & Tables
+```
+GET  /api/weeks/department/{id}/current
+GET  /api/weeks/{id}/table-data
+PUT  /api/weeks/{id}/table-data
+```
+
+### Audit
+```
+GET  /api/audit/logs
+```
+
+## Учётные данные
 - **Email:** vadim@emergent.dev
 - **Password:** admin123
 - **Роль:** Developer (Super Admin)
 
-## Будущие задачи (P1-P2)
+## Тестирование
+- Backend: 22/22 тестов PASS
+- Frontend: 100% функций работают
+- Test files: `/app/test_reports/iteration_2.json`
+
+## Будущие задачи
 
 ### P1 - Высокий приоритет
 - [ ] WebSocket для real-time синхронизации
-- [ ] Восстановление данных (Developer role)
+- [ ] Восстановление данных (откат удалений)
 - [ ] Push уведомления
-- [ ] Управление пользователями
+- [ ] Таблица старшего состава
 
 ### P2 - Средний приоритет
 - [ ] Redis кэширование
-- [ ] Архив недель с фильтрацией
-- [ ] Экспорт отчётов
-- [ ] Мобильная адаптация
-- [ ] Таблица "Старшего состава"
-
-## Технический стек
-- FastAPI 0.109.0
-- MongoDB (motor)
-- React 18
-- Tailwind CSS 3
-- Shadcn/UI
-- JWT (PyJWT)
-- bcrypt
-- pyotp (2FA)
+- [ ] Архив недель с историей
+- [ ] Мобильная адаптация (карточки)
+- [ ] Undo/Redo для таблиц
 
 ## Структура проекта
 ```
 /app/
 ├── backend/
-│   ├── routes/        # API endpoints
-│   ├── utils/         # Helpers (security, audit, permissions)
-│   ├── models.py      # Pydantic models
-│   ├── database.py    # MongoDB connection
-│   └── server.py      # FastAPI app
+│   ├── routes/
+│   │   ├── admin.py      # NEW
+│   │   ├── auth.py
+│   │   ├── audit.py
+│   │   ├── departments.py
+│   │   ├── factions.py
+│   │   ├── topics.py     # Updated
+│   │   └── weeks.py
+│   ├── utils/
+│   ├── models.py
+│   └── server.py
 └── frontend/
-    ├── src/
-    │   ├── components/ # React components
-    │   ├── contexts/   # Auth, Theme, WebSocket contexts
-    │   └── utils/      # API helpers
-    └── public/
+    └── src/
+        ├── components/
+        │   ├── AdminPage.js    # NEW
+        │   ├── DepartmentPage.js  # Updated
+        │   └── ...
+        └── ...
 ```
 
+## Поддержка
+**Разработчик:** Vadim Smirnov  
+**Связь:** https://vk.com/coder2406
+
 ---
-*Последнее обновление: 06.02.2026*
+*Последнее обновление: 07.02.2026*
