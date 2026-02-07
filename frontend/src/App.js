@@ -34,12 +34,14 @@ const PrivateRoute = ({ children }) => {
 };
 
 const AppLayout = ({ children }) => {
+  const [sidebarOpen, setSidebarOpen] = React.useState(false);
+  
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header onMenuClick={() => setSidebarOpen(true)} />
       <div className="flex">
-        <Sidebar />
-        <main className="flex-1">{children}</main>
+        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+        <main className="flex-1 min-w-0 lg:ml-0">{children}</main>
       </div>
     </div>
   );
